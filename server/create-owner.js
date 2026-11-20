@@ -1,0 +1,3 @@
+require('dotenv').config();
+const bcrypt=require('bcryptjs'); const {Pool}=require('pg');
+(async()=>{const [email,name,password]=process.argv.slice(2);if(!email||!name||!password||password.length<12){console.error('Usage: npm run owner:create -- owner@example.com "Owner name" "StrongPassword12!" (min 12 chars)');process.exit(1);}const pool=new Pool({connectionString:process.env.DATABASE_URL});try{const hash=await bcrypt.hash(password,12);const q=await pool.query('INSERT INTO users(email,display_name,password_hash,is_owner) VALUES($1,$2,$3,TRUE) RETURNING id,email,display_name',[email.toLowerCase(),name,hash]);console.log('Owner created:',q.rows[0]);}catch(e){console.error(e.message);process.exitCode=1;}finally{await pool.end();}})();
